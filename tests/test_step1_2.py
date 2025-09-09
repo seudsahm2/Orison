@@ -31,7 +31,7 @@ def test_routing_intro_to_audit_and_back(monkeypatch):
 
 
 def test_quit_from_intro(monkeypatch):
-    inputs = iter(["Tester", "2"])  # name, choose quit
+    inputs = iter(["Tester", "3"])  # name, choose quit
 
     def fake_input(prompt: str = "") -> str:  # noqa: ARG001
         return next(inputs)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict
-
+import time
 from ...engine import GameState, Scene
 from ...engine.scene import InputPort, OutputPort
 from ...models import Contract, Mark
@@ -26,21 +26,31 @@ class IntroScene(Scene):
             io_out.write_line("What is your name?")
             state.player_name = io_in.read_line("> ").strip() or "Wanderer"
             io_out.write_line(f"Hello, {state.player_name}.")
-        
+
         io_out.write_line("")
         io_out.write_line("Main Menu")
         io_out.write_line("1) Begin an audit")
-        io_out.write_line("2) Quit")
-        choice = io_in.read_line("Choose [1-2]: ").strip()
-        
+        io_out.write_line("2) Pick up a Witness Mark (demo)")
+        io_out.write_line("3) Quit")
+        choice = io_in.read_line("Choose [1-3]: ").strip()
+        choice = choice or "3"  # Enter defaults to Quit (for test_smoke)
+
         if choice == "1":
             state.goto("audit")
         elif choice == "2":
+            has_witness = any(m.is_witness for m in state.inventory)
+            if not has_witness:
+                state.inventory.append(Mark(id="M-WIT-DEMO", kind="witness", is_witness=True))
+                state.flags["has_witness_mark"] = True
+                io_out.write_line("You received a Witness Mark.")
+            else:
+                io_out.write_line("You already carry a Witness Mark.")
+            state.goto("intro")
+        elif choice == "3":
             state.goto("end")
         else:
-            io_out.write_line("I did not understand returning to menu.")
-            state.goto("intro")
-            
+            io_out.write_line("I did not understand. Returning to menu.")
+            state.goto("intro")         
 
 class AuditScene(Scene):
     """A minimal audit to demonstrate routing and models."""
@@ -55,18 +65,22 @@ class AuditScene(Scene):
             clauses=["Kep canals clear"],
             is_public=True
         )
-        mark = Mark(id="M-WIT-01", kind="witness", is_witness=True)
+        
+        has_witness = any(m.is_witness for m in state.inventory)
+        flag_has_witness = state.flags.get("has_witness_mark", False)
         
         io_out.write_line("")
         io_out.write_line("Audit: Review Summary")
         io_out.write_line(str(contract))
-        io_out.write_line(str(mark))
+        io_out.write_line(f"You hold a witness mark: {'yes' if has_witness else 'no'} "
+                          f"(flag: {'yes' if flag_has_witness else 'no'})")
         
         io_out.write_line("")
         io_out.write_line("What is next?")
         io_out.write_line("1) Return to main menu")
         io_out.write_line("2) Conclude for now")
         choice = io_in.read_line("Choose [1-2]: ").strip()
+        choice = choice or "1"
         
         if choice == "1":
             state.goto("intro")
