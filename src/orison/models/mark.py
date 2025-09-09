@@ -13,5 +13,5 @@ class Mark:
     is_witness: bool = False
     
     def __str__(self) -> str:
-        status = "witneess" if self.is_witness else "token"
+        status = "witness" if self.is_witness else "token"
         return f"Mark[{self.id}] ({self.kind}, {status})"
