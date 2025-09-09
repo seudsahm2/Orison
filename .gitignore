@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyo
+*.pyc
+.venv/
+
+# Tools
+.pytest_cache/
+.coverage*
+.dist/
+build/
+dist/
+*.egg-info/

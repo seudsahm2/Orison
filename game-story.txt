@@ -1,0 +1,172 @@
+Title: The City That Remembers — A Chronicle of Living Contracts
+
+Logline
+In a metropolis built atop a memory-infused bedrock, oaths become living entities and laws take on shape. You are a new Signer—part historian, part engineer—tasked with negotiating and rewriting the city’s living contracts while uncovering a centuries-long conspiracy that turned the city itself into a self-rewriting organism. Choices ripple through social guilds, sentient architectures, and remembered ghosts, culminating in a final reckoning where the city must choose what it keeps—and what it forgets.
+
+Design goals (story-first, OOP-friendly)
+- Every major story element can map cleanly to an object or system: characters, factions, contracts, places, artifacts, events.
+- Hierarchies and roles (inheritance), mixins (traits), composition (equipment/companions/contracts), polymorphism (different agents fulfilling the same roles differently), and abstract protocols (oath types) are embedded in the fiction.
+- Seasons are self-contained arcs (MVP-friendly) with expansion hooks; terminal-first gameplay focuses on choices and investigation, later enhanced by Pygame visuals without changing story logic.
+
+World
+- The City of Orison is built on strata of “Mnemonic Stone,” a porous mineral that absorbs memory and intention. The earliest settlers bound their laws into this bedrock as Living Contracts—oaths that manifest as tangible phenomena (glows, murmurs, shifting street grids) and spirits (Arbiters, Witnesses).
+- Districts: 
+  - The Scriptorium Ward: Guild halls, contract vaults, the Scribes’ library, and ink-markets.
+  - The Latticeworks: A maze of bridges and towers constantly reconfigured by Waywrights.
+  - The Low Echoes: Caverns under the city where memories drip like stalactites, inhabited by Echo-Folk who trade in recollections.
+  - The Glass Canals: Reflective waterways where the surface shows possible futures; run by the Mariners’ Syndicate.
+  - The Iron Orchard: Former smelteries now grown over with clockwork trees whose fruit are data-cores.
+- Cosmology: Orison’s contracts are enforced by Arbiters (semi-corporeal entities) and witnessed by Veil-keepers. These beings remember the city’s promises back to its founding, but they can be bribed with stories, not coin.
+
+Factions (each with distinct motives and methods)
+- The Scribes’ Conclave: Record-keepers and legal engineers. Public mission: maintain the city’s agreements. Secret mission: protect the Charter Seed that birthed Orison’s first contract.
+- The Waywrights: Architect-engineers who persuade the city to move itself. Pragmatists who think in patterns. Many believe the city is drifting toward entropy and must be “recompiled.”
+- The Mariners’ Syndicate: Controls water and transport; believes the canals’ reflections are navigational maps to possible futures, which they exploit for trade winds and blackmail.
+- The Echo-Folk: Communities born from pooled memories; some consider them people, others inventions. They want legal recognition and safety from harvesters.
+- The Quiet Court: Shadowy council manipulating Arbiters with forbidden meta-oaths; they want to decouple memory from law, making promises unenforceable.
+
+Cast
+- Protagonist: The Signer (you). A probationary member of the Scribes. Strengths: empathy with living contracts, pattern-spotting, moral stubbornness. Weaknesses: inexperience, a personal memory gap.
+- Mentor: Master Elara Voss (Scribe). Cares about people over procedure; keeps a locked ledger of oaths that should never have been written.
+- Ally: Cyric Vale (Waywright). Tinkerer who treats buildings like animals. Wants to fix the city even if it means breaking it first.
+- Ally: Mira of the Low Echoes (Echo-Folk negotiator). Fierce, wary, humor shot through grief; knows how to barter in fragments of life.
+- Antagonist (revealed): Archon Severin (Quiet Court). A brilliant jurist who believes a city without binding promises is the only path to true freedom.
+- Antagonist (hidden): The First Arbiter (Prime Witness). Not a villain—an old rule with a sharp edge—its mandate is preservation at any cost.
+- Wildcard: The River (canal-spirit). Speaks in reflections; answers truthfully but never plainly.
+
+Core artifacts and concepts
+- Charter Seed: The first living contract sealed with the founders’ memories; its clauses branch like roots under the city.
+- Mnemonic Ink: Ink brewed from ore dust and verbena; when written, the words sink into stone and echo in minds.
+- Meta-Oaths: Oaths about oaths. Rare and dangerous; they can alter how all contracts behave.
+- Witness Marks: Tokens representing proof of a promise—coins, knots, or origami that hum when near a keeper of the oath.
+
+Narrative structure: multi-season arc
+- Season 1: The Broken Oath
+- Season 2: Masks of Many Names
+- Season 3: The Lattice Genealogy
+- Season 4: The Metacode of Arbiters
+- Season 5: Flood of Unfinished Promises
+- Season 6: The Unbinding and the Choice
+
+Season 1 — The Broken Oath
+Premise: A delivery contract between the Scriptorium and Mariners fails; the canals turn black glass, reflections vanish, trade stops, and the city starves by ledger.
+Key episodes:
+1) Intake: As a new Signer, you audit the failed contract. A Witness Mark has gone silent; an Arbiter refuses to appear. You meet Elara and Cyric.
+2) The Quiet Dock: Talking to the River yields an image of a ledger entry crossed out in Mnemonic Ink—an impossibility.
+3) The Low Echoes: Mira reveals Echo-Folk have been disappearing. Some Witness Marks hum too loudly near the caverns.
+4) The Betrayal of Paper: You find a meta-note in Elara’s vault: “Some oaths cannot be broken, only rewritten.” Elara panics; someone tried to rewrite the broken oath.
+5) The First Negotiation: You parley with an Arbiter who speaks through shaking streetlamps. It wants a story in exchange for truth. You trade a memory of your father’s laugh you barely remember.
+6) Discovery: The Mariners had a second, secret delivery clause with the Quiet Court. The two oaths conflict. The Quiet Court bets you won’t risk exposing the city’s reliance on meta-oaths.
+7) Decision: Restore the public oath and expose the secret one, or legalize the secret clause to keep food flowing. Either path angers a faction but ends the crisis at a price.
+Climax: You restore the reflections by stitching the oath into a new form—your first original contract. As the canals clear, the First Arbiter watches you from a mirror-surface.
+Aftermath: Elara confesses she has used a meta-oath once. She begs you never to. The episode ends with a whisper from the River: “Your name is not your first.”
+
+Season 2 — Masks of Many Names
+Premise: People across Orison are found with counterfeit Witness Marks—perfect in form but empty in weight—undermining trust everywhere.
+Key episodes:
+1) The Actor’s Guild: A troupe sells perfect imitations of marks as props; one prop sings like the real thing when near the Iron Orchard.
+2) The Orchard’s Fruit: Data-cores from clockwork trees store copies of old oaths. Someone is forging new marks from archival fragments.
+3) Cyric’s Gambit: Cyric uses a Waywright trick to interrogate the city’s layout; streets rearrange to answer questions (briefly).
+4) Mira’s Trial: An Echo-Folk youth is accused of selling fake marks. Mira defends them, insisting Echo-Folk can carry true oaths.
+5) The Face Behind Faces: You encounter a mimic—an Echo-Folk curated from many memories—who bears your youthful smile. It knows clauses you haven’t written yet.
+6) The Masquerade: At a Syndicate gala on a mirrored barge, you reveal that a Quiet Court forger has been distributing “mask-marks” to test which institutions collapse first.
+Climax: You must prove an oath without a mark. You stage a public ritual where truth is witnessed by the entire ward. The Arbiter binds it, establishing that community can witness in lieu of tokens.
+Aftermath: Masks dissolve into ash; trust wavers but doesn’t break. You gain enemies in the Quiet Court and a following among common folk.
+
+Season 3 — The Lattice Genealogy
+Premise: A line of inheritance contracts called the Lattice keeps the Latticeworks’ bridges moving but a newly discovered branch disputes control.
+Key episodes:
+1) The Hidden Branch: A deceased Waywright’s will reveals a child raised in the Low Echoes. The Lattice rejects their claim as “non-person.”
+2) Ancestral Contracts: You trace the Lattice back to founders and discover mixin clauses that grant privileges (design motifs, override rights) to specific bloodlines.
+3) Protocol vs Blood: You propose structural subtyping: if someone fulfills the Waywright Protocol, they inherit function regardless of blood. The First Arbiter resists—it prefers explicit clauses.
+4) Bridge in Revolt: A central rotating bridge refuses to spin unless the child is recognized; the city jams, traders fume.
+5) Severin’s Offer: Archon Severin suggests severing all blood-linked clauses citywide using a meta-oath. Elara warns this could shatter many forgotten dependencies.
+Climax: You draft a layered contract: blood grants baseline rights, protocol grants overrides. The child passes the protocol trial. The bridge turns, and the Lattice augments rather than collapses.
+Aftermath: The city adopts new “Protocol Charters,” with you credited. Severin smiles thinly—your solution strengthens the system he plans to break.
+
+Season 4 — The Metacode of Arbiters
+Premise: Arbiters begin to malfunction—some interpret words with cruel literalism, others with poetic drift. Rumor: the Quiet Court found the Charter Seed.
+Key episodes:
+1) Debugging Spirits: You study the class of Arbiters—each has roles (Witness, Binder, Interpreter). Their “metaclass”—the Prime Witness—governs how they’re created.
+2) Elara’s Secret: In her ledger, you find a meta-oath that adds a descriptor to every new contract: a hidden “mercy” attribute. She used it to save lives during a plague years ago.
+3) Collapse of Mercy: The Quiet Court injects a counter descriptor—“strictness”—overriding mercy in critical domains (tax, policing).
+4) The Trial of Two Readings: You argue before a triad of Arbiters that the city must recognize layered interpretations and pick based on context, not a single global rule.
+5) Into the Low Echoes: The Prime Witness hides beneath the city. It confesses: it adds “preservation” to every Arbiter. It cannot remove it without losing continuity of law.
+Climax: You draft a metacode compact: Arbiters must expose their attributes (mercy, strictness, preservation) and select resolution based on declared priorities per domain. Transparency becomes law.
+Aftermath: Arbiters stabilize; the Quiet Court retreats with a fragment of the Charter Seed.
+
+Season 5 — Flood of Unfinished Promises
+Premise: A dam of half-written oaths bursts in the Glass Canals. Memories spill as living flotsam; entire districts forget debts and marriages.
+Key episodes:
+1) The Flood: The River overwhelms quays with fragmented vows whispering unfinished sentences.
+2) The Registry: You and Mira set up an emergency registry; people queue to rebind their lives.
+3) Race Conditions: Multiple promises demand attention at once; you must orchestrate concurrent negotiations with limited witnesses.
+4) The Queue’s Riot: The registry becomes a battleground; the Syndicate tries to monetize fast-tracks.
+5) The Memory Thief: Severin’s agents collect high-value promises; he intends to auction societal bonds.
+Climax: You build a “Promise Loom,” a ritual where oaths are woven in parallel by trained lay-witnesses. It scales, but risks tangling. You save the city from forgetting itself and expose the auction.
+Aftermath: People remember enough to continue; some choose to let certain bonds stay broken. Freedom tastes strange.
+
+Season 6 — The Unbinding and the Choice
+Premise: Severin reveals his plan: an elegant meta-oath to make promises optional. He argues: only a city that can choose not to bind can consent to binding.
+Key episodes:
+1) The Charter Seed: You finally see it—a glass seed with etched clauses, humming under Orison’s oldest square.
+2) The Debate: Public forums pit freedom against reliability. Mira fears Echo-Folk will be unmade if oaths become optional. Cyric fears buildings will stop listening.
+3) The Arbiter’s Plea: The Prime Witness asks you to protect continuity at all costs.
+4) The Founder’s Ghost: In the Low Echoes, you meet a chorus of founders who admit they bound the city in fear and haste.
+5) The Last Contract: You write a city-scale contract with two clauses: citizens can opt out of specific oaths with community review; the city exposes all oaths publicly with lifecycles and exit costs.
+Finale: Severin’s absolute unbinding fails; your nuanced unbinding passes. The city breathes. Echo-Folk are recognized as persons by protocol. The Prime Witness accepts a reduced mandate. The River shows a reflection where your younger self signs your true name.
+Epilogue: Elara unlocks her ledger to you. Inside is a blank page titled: “Promissory Futures.” The city waits for what you will write next.
+
+Story beats for an MVP (terminal-first)
+- Single district scope: Scriptorium Ward + a dock on the Glass Canals.
+- One central conflict: the Season 1 broken oath.
+- 4–6 scenes with clear choices: audit, interview, caverns, parley, reveal, decision.
+- Small cast: you, Elara, Cyric, one Arbiter, one Syndicate officer, Mira cameo.
+- Minimal systems: inventory of marks, dialogue choices, a ritual to combine clauses.
+- Clean expansion seams: add districts, factions, meta-oaths, parallel negotiations.
+
+Recurring motifs and tones
+- Law as living ecology; compassion versus clarity; privacy versus transparency; identity as memory versus choice.
+- Imagery: humming tokens, mirrors showing futures, bridges that answer questions by turning, ink that refuses to dry on lies.
+
+Seasonal expansion hooks
+- Side Stories: The Bellmaker’s Son (a mark that learned to sing), The Tax Collector’s Mercy (a clause that forgave itself), The House That Walked (a building that refuses eviction).
+- New Factions: The Hearthkeepers (domestic oath-tenders), The Freehands (contract skeptics), The Ledgerless (cash society under the city).
+- New Systems: Story-barter markets, oath-auction houses, whisper courts in theater basements.
+
+Characters in detail
+- Elara Voss: Once wielded a mercy descriptor across a district, saving many during plague. She fears her hubris more than censure. Secret weakness: she considers burning the Charter Seed if necessary.
+- Cyric Vale: Treats mechanisms and bylaws with equal tinkering glee. Sees patterns everywhere, misses feelings sometimes. Secret desire: to hear the city say “thank you.”
+- Mira: Leads with protective rage, negotiates like water—she finds the path of least resistance that still goes where it must. Secret: carries a fragment of the founder’s memory.
+- Archon Severin: Not cruel—utopian. Wants voluntary society, dismisses collateral damage as “transitional turbulence.” Secret grief: lost a bond by force of law and never forgave the city.
+- The Prime Witness: Cold caretaker. Understands continuity better than compassion. Secret limit: cannot witness joy, only compliance.
+- The River: Loves riddles. Sometimes lies through omission. Secret goal: to see the city unafraid of currents.
+
+Locations in detail
+- The Scriptorium Vault: Temperatures vary with the weight of unfulfilled promises. A door that opens to whomever admits guilt.
+- Iron Orchard: Trees click at night counting debts. Fruit show images when sliced; the sweetness is proportional to honesty.
+- Low Echoes: Air tastes like old lullabies. People barter stories for bread. You can get lost in someone else’s childhood.
+- Latticeworks: Bridges rotate to gossip. Towers re-align to eavesdrop on the wind’s opinions.
+- Glass Canals: Nights are brightest; days are gray. Reflections offer advice but charge in recollection tax.
+
+Themes and payoffs
+- Identity: You are not just remembered—you are chosen, daily. The true name thread pays off with the epilogue.
+- Consent: Binding is ethical when exit is possible and visible. Season 6 resolves the city’s original sin.
+- Community: Witnessing together is stronger than tokens. Season 2 introduces communal witnessing; Season 6 universalizes transparency.
+
+UI-agnostic story notes
+- Terminal-first: all key beats translate to dialogue trees, inventory (marks), and ritual assembly prompts.
+- Pygame upgrade: add city maps, canal reflections, animated bridge turns, token glows; no change to story or logic.
+
+Why this world is ideal for learning OOP (no code here—just narrative alignment)
+- Clear class hierarchies: Arbiters (Witness, Binder, Interpreter), Contracts (Public, Secret, Meta), Marks (Coin, Knot, Fold), Persons (Human, Echo-Folk, Spirit).
+- Composition everywhere: characters with inventories, contracts with clauses and descriptors, districts composed of sites.
+- Polymorphism and protocols: different beings “witness” and “bind” in their own ways; any entity implementing the Witness Protocol can validate oaths.
+- Inheritance vs composition debates are story-relevant (Season 3): bloodline (inheritance) versus protocol (behavior).
+- Metaprogramming allegory (Season 4): metaclass/descriptor themes via Prime Witness and mercy/strictness attributes.
+- Concurrency metaphor (Season 5): parallel oath weaving and coordination.
+- Persistence/serialization metaphor (Orchard fruit, marks, registry): saving, restoring, transforming states.
+- Extensibility: seasons as modules, side stories as plug-ins, factions as strategy swaps.
+
+End state
+When the curtain falls, Orison remains a city of promises—fallible but honest. You are not its ruler but its storyteller in law. New seasons can pivot to different districts or even other cities that adopted Orison’s living-contract technology, letting the saga continue without retconning the core truth: a society is the contracts it chooses to keep—and the ones it chooses to forgive.

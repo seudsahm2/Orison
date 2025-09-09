@@ -1,0 +1,35 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "orison"
+version = "0.1.0"
+description = "The City That Remembers — terminal-first OOP learning game (Pygame-ready)"
+readme = "README.md"
+authors = [{name = "You"}]
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4",
+  "pytest-cov>=4.1",
+  "ruff>=0.5.0",
+]
+ui = [
+  "pygame>=2.5",
+]
+
+[project.scripts]
+orison-term = "orison.__main__:main"
+
+[tool.ruff]
+line-length = 100
+select = ["E","F","I","UP","B"]
+ignore = []
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-q"
+testpaths = ["tests"]
