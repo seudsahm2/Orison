@@ -5,6 +5,7 @@ import time
 from ...engine import GameState, Scene
 from ...engine.scene import InputPort, OutputPort
 from ...models import Contract, Mark
+from ...models.arbiter import TerminalArbiter
 
 
 @dataclass
@@ -80,6 +81,7 @@ class AuditScene(Scene):
         io_out.write_line("1) Return to main menu")
         io_out.write_line("2) Conclude for now")
         io_out.write_line("3) Investigate (chck ledger or visit dock)")
+        io_out.write_line("4) Visit the arbiter")
         choice = io_in.read_line("Choose [1-3]: ").strip()
         choice = choice or "1"
         
@@ -116,10 +118,28 @@ class AuditScene(Scene):
             next_scene = strategies.get(sub, lambda: "intro")()
             state.goto(next_scene)
             return
+        elif choice == "4":
+            state.goto("arbiter")
+            return
         
         io_out.write_line("Invalid choice. returning to main menu")
         state.goto("intro")
         
+class ArbiterScene(Scene):
+    def __init__(self) -> None:
+        super().__init__(scene_id="arbiter")
+        self.arbiter = TerminalArbiter()
+    
+    def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
+        io_out.write_line("")
+        io_out.write_line("You meeet th Arbiteer.offer a mmory to recivee a hint.")
+        memory = io_in.read_line("Type a memory (or just press enteer to skip): ").strip()
+        hint = self.arbiter.trade_memory_for_hint(memory)
+        io_out.write_line(f"Arbiter's hine: {hint}")
+        io_out.write_line("")
+        io_out.write_line("1) Return to main menu")
+        choice = io_in.read_line("Choose [1]: ").strip() or "1"
+        state.goto("intro")
 
 class EndScene(Scene):
     def __init__(self) -> None:
@@ -133,6 +153,7 @@ class EndScene(Scene):
 SCENES: Dict[str, Scene] = {
     "intro": IntroScene(),
     "audit": AuditScene(),
+    "arbiter": ArbiterScene(),
     "end": EndScene(),
 }
 
