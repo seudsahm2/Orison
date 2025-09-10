@@ -79,16 +79,46 @@ class AuditScene(Scene):
         io_out.write_line("What is next?")
         io_out.write_line("1) Return to main menu")
         io_out.write_line("2) Conclude for now")
-        choice = io_in.read_line("Choose [1-2]: ").strip()
+        io_out.write_line("3) Investigate (chck ledger or visit dock)")
+        choice = io_in.read_line("Choose [1-3]: ").strip()
         choice = choice or "1"
         
         if choice == "1":
             state.goto("intro")
-        elif choice =="2":
+            return
+        elif choice == "2":
             state.goto("end")
-        else:
-            io_out.write_line("Invalid choice. returning to main menu")
-            state.goto("intro")
+            return
+        elif choice == "3":
+            def handle_check_ledger() -> str:
+                state.flags["checked_ledger"] = True
+                io_out.write_line("Ledger notes: backlog of repairs and mismatched reports.")
+                return "intro"
+            
+            def handle_visit_dock() -> str:
+                state.flags["visited_dock"] = True
+                io_out.write_line("At the docks: faint smell of blackwater and nervous whispers.")
+                return "intro"
+            
+            strategies = {
+                "1": handle_check_ledger,
+                "2": handle_visit_dock,
+                "3": lambda: "intro",
+            }
+            
+            io_out.write_line("")
+            io_out.write_line("Investigation")
+            io_out.write_line("1) Check ledger")
+            io_out.write_line("2) Visit dock")
+            io_out.write_line("3) Back")
+            sub = io_in.read_line("Choose [1-3]: ").strip() or "3"
+            
+            next_scene = strategies.get(sub, lambda: "intro")()
+            state.goto(next_scene)
+            return
+        
+        io_out.write_line("Invalid choice. returning to main menu")
+        state.goto("intro")
         
 
 class EndScene(Scene):

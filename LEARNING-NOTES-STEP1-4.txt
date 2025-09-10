@@ -1,0 +1,189 @@
+Orison — Learning Notes (Steps 1–4, terminal-first)
+
+Purpose
+This file explains everything we built so far in simple, practical language. It follows the code in order and tells you: what each part does, why we chose that design, what could go wrong with other choices, and how this teaches Python OOP.
+
+Key files (you’ll see them mentioned below)
+- src/orison/engine/scene.py — Scene base class + IO protocols
+- src/orison/engine/game_state.py — GameState (global state + navigation)
+- src/orison/io/terminal/app.py — Terminal UI: ConsoleIO + Intro/Audit/End scenes + registry/loop
+- src/orison/models/mark.py — Mark dataclass (you have this)
+- src/orison/models/contract.py — Contract dataclass (simple, similar to Mark) if present
+- src/orison/models/__init__.py — re-exports Mark, Contract for clean imports
+- tests/*.py — small tests that confirm each step works
+
+Glossary (short and useful)
+- Class: a blueprint for objects (e.g., Scene, GameState, Mark).
+- Object/instance: a real thing created from a class (e.g., IntroScene()).
+- Method: a function inside a class (e.g., Scene.run(...)).
+- Dataclass (@dataclass): a class that mainly holds data; Python auto-writes __init__, __repr__, __eq__.
+- Protocol: a “shape”/interface (duck typing) — if an object has these methods, it’s acceptable.
+
+============================================================
+STEP 1 — Scenes + routing (minimum playable loop)
+What the game needs now
+We need to move between different screens (intro, audit, end) in a clean way, and we want the same logic to work in terminal and later in Pygame.
+
+What we built
+1) Scene base class (engine/scene.py)
+   - Scene is an Abstract Base Class (ABC) with a required method run(state, io_in, io_out).
+   - Each scene has a scene_id (like “intro”, “audit”, “end”).
+   - Why an ABC? It forces every scene to implement run(...) the same way, so the loop can call them uniformly.
+
+2) IO Protocols (engine/scene.py)
+   - InputPort has read_line(prompt) and OutputPort has write_line(text).
+   - Scenes use only these methods — they don’t know about print/input or Pygame. This keeps UIs swappable.
+   - If later we make PygameIO, it just needs to provide the same methods.
+
+3) GameState (engine/game_state.py)
+   - Holds the current_scene_id (like a bookmark), a running flag, and helper methods goto(scene_id) and stop().
+   - Centralizing state makes it easy to test and reason about.
+
+4) Scene registry + loop (io/terminal/app.py)
+   - SCENES is a dict: {"intro": IntroScene(), "audit": AuditScene(), "end": EndScene()}.
+   - run_terminal_app() uses current_scene_id to fetch a scene and call run(...).
+
+Why this design (benefits)
+- Clear separation of logic and UI: scenes only talk to Input/Output ports.
+- Easy navigation: state.goto("audit") moves the game without spaghetti code.
+- Extensible: add a new scene, register it, and the loop automatically supports it.
+
+What goes wrong without it
+- If scenes directly used print/input, we’d be locked to terminal and rewriting for Pygame later.
+- If we had no registry, scene changes would get hard-coded and messy.
+
+OOP concepts you practiced
+- ABCs (Scene is an abstract class you must implement) — python-oop-topics: Level 2.
+- Protocols (IO surface) and duck typing — Level 5.
+- Composition (registry builds the set of scenes) — Level 5.
+
+============================================================
+STEP 2 — Data models with dataclasses (Mark, Contract)
+What the game needs now
+We need simple, readable domain objects to show and pass around: tokens/marks, contracts, etc.
+
+What we built
+1) Mark (models/mark.py)
+   - A dataclass with fields: id (str), kind (str), is_witness (bool, default False).
+   - We wrote __str__ to show a player-friendly line like: Mark[M-WIT-01] (witness, witness).
+   - Dataclass auto-writes: __init__, __repr__ (useful in logs), and __eq__ (value equality).
+
+2) Contract (models/contract.py) — if present now or soon
+   - A dataclass with fields: id (str), title (str), clauses (list[str]), is_public (bool).
+   - Use field(default_factory=list) for clauses so each Contract gets its own list (no shared mutable default!).
+   - __str__ returns a friendly summary for the player.
+
+3) models/__init__.py re-exports
+   - from orison.models import Mark, Contract gives a stable import path for the rest of the code.
+   - We can refactor file layout later without breaking imports.
+
+Why dataclasses
+- Less code: we avoid hand-writing boilerplate __init__/__repr__/__eq__.
+- Clear intent: it’s a data holder; small behavior can be added later.
+- Safer defaults: default_factory=list prevents the classic shared-list bug.
+
+What goes wrong without it
+- More typing, more chances for mistakes, and harder-to-read debug prints.
+
+OOP concepts you practiced
+- Dataclasses — Level 6.
+- Dunder methods: __str__ vs __repr__ — Level 4.
+
+============================================================
+STEP 3 — Inventory + flags on GameState, and fixing the menu
+What the game needs now
+We need to remember what the player has and what they discovered between scenes. Also, the main menu needs to be reliable.
+
+What we built
+1) Inventory and flags on GameState (engine/game_state.py)
+   - inventory: list[Mark] = field(default_factory=list)
+   - flags: dict[str, bool] = field(default_factory=dict)
+   - Why? Inventory holds objects; flags capture story facts (e.g., "has_witness_mark").
+
+2) Intro menu with three options (io/terminal/app.py)
+   - 1) Begin an audit — sets next scene to "audit".
+   - 2) Pick up a Witness Mark (demo) — grants a Mark once and sets flags["has_witness_mark"] = True; returns to intro.
+   - 3) Quit — sets next scene to "end".
+   - Pressing Enter defaults to Quit (handy for the smoke test).
+
+3) One if/elif/elif/else chain (important!)
+   - If you use two separate if blocks, the second if’s else can run after a valid choice and reset you back to intro.
+   - Using a single chain prevents this fall-through bug.
+
+4) AuditScene reads state
+   - Prints whether you hold a witness mark and whether the flag is set, so you can see inventory + flags in action.
+
+Why this design (benefits)
+- Central state makes scenes thin and testable;
+- Menu is predictable; options do what they say.
+
+What goes wrong without it
+- You’d lose progress between scenes.
+- Menu could bounce you around if the conditionals aren’t chained.
+
+OOP concepts you practiced
+- Encapsulation of state — Levels 1–2.
+- Dataclass default factories — Level 6.
+
+============================================================
+STEP 4 — Dialogue choices with tiny strategies (in Audit)
+What the game needs now
+We want simple branching inside a scene without turning the code into a giant if/elif block.
+
+What we built (io/terminal/app.py, AuditScene)
+- Added option 3) Investigate
+  - Submenu:
+    - 1) Check ledger → sets flags["checked_ledger"] = True; prints a note; returns to intro.
+    - 2) Visit dock → sets flags["visited_dock"] = True; prints a line; returns to intro.
+    - 3) Back → returns to intro.
+- Implemented as a small “strategy” table:
+  - strategies = {"1": handle_check_ledger, "2": handle_visit_dock, "3": lambda: "intro"}
+  - We look up the handler function and call it; it updates state and returns the next scene.
+- Options 1 (Return) and 2 (Conclude) still work as before.
+
+Why this design (benefits)
+- Each choice has its own tiny function — easier to read, extend, and test.
+- No giant nested conditionals.
+
+What goes wrong without it
+- One long function becomes fragile and hard to maintain.
+
+OOP concepts you practiced
+- Strategy pattern (Pythonic version using a dict of callables) — Level 5.
+- State changes through GameState — Levels 1–2.
+
+============================================================
+How to run and what to expect (Windows cmd)
+- Tests
+  - pytest -q
+  - You should see green for the smoke, routing, inventory/flags, and investigate tests.
+- Play
+  - python -m orison
+  - Intro:
+    - 1) Begin an audit → goes to Audit
+    - 2) Pick up a Witness Mark (demo) → grants a mark and returns to Intro
+    - 3) Quit → exits
+  - Audit:
+    - 1) Return to main menu
+    - 2) Conclude for now
+    - 3) Investigate → (1) Check ledger or (2) Visit dock; sets flags; back to Intro
+
+What each part teaches you about OOP (short map)
+- Scene ABC and IO Protocols → interfaces and polymorphism (ABCs and duck typing)
+- GameState → encapsulation and single source of truth for navigation/state
+- Mark/Contract dataclasses → simple, reliable data holders with readable outputs
+- Strategy dict in Audit → clean branching without complex if/elif trees
+
+Common pitfalls we avoided
+- Shared mutable defaults by using default_factory for lists/dicts.
+- Menu logic fall-through by using a single if/elif/elif/else chain.
+- UI coupling by using IO protocols (terminal now; Pygame later) instead of direct print/input inside logic.
+
+What’s next (sneak peek)
+- Step 5: an Arbiter interface and a tiny interaction (trade a typed “memory” for a hint). This will reinforce the difference between an abstract contract (what methods exist) and a concrete implementation (how we respond in terminal), while keeping the engine clean.
+
+Tip: When stuck, read this order
+1) engine/scene.py (what is a Scene, what does IO look like?)
+2) engine/game_state.py (how do we navigate and store state?)
+3) models/*.py (what data lives in the world?)
+4) io/terminal/app.py (how does the terminal adapt IO and wire scenes?)

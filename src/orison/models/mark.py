@@ -15,3 +15,4 @@ class Mark:
     def __str__(self) -> str:
         status = "witness" if self.is_witness else "token"
         return f"Mark[{self.id}] ({self.kind}, {status})"
+    
