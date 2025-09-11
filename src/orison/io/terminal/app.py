@@ -27,6 +27,10 @@ class IntroScene(Scene):
             io_out.write_line("What is your name?")
             state.player_name = io_in.read_line("> ").strip() or "Wanderer"
             io_out.write_line(f"Hello, {state.player_name}.")
+        
+        scribes = state.get_rep("scribes")
+        mariners = state.get_rep("mariners")
+        io_out.write_line(f"Reputation -- Scribes: {scribes} | Mariners: {mariners}")
 
         io_out.write_line("")
         io_out.write_line("Main Menu")
@@ -92,6 +96,11 @@ class AuditScene(Scene):
                           f"(flag: {'yes' if flag_has_witness else 'no'})")
         
         io_out.write_line(f"Canal status: {'BLACK' if canals_black else 'CLEAR'}")
+        
+        scribes = state.get_rep("scribes")
+        mariners = state.get_rep("mariners")
+        io_out.write_line(f"Reputation - Scribes: {scribes} | Mariners: {mariners}")
+        
         io_out.write_line("")
         io_out.write_line("What is next?")
         io_out.write_line("1) Return to main menu")
@@ -99,7 +108,8 @@ class AuditScene(Scene):
         io_out.write_line("3) Investigate (chck ledger or visit dock)")
         io_out.write_line("4) Visit the arbiter")
         io_out.write_line("5) Toggle secret clause (reveal/withdraw)")
-        choice = io_in.read_line("Choose [1-5]: ").strip()
+        io_out.write_line("6) Proceed to decision")
+        choice = io_in.read_line("Choose [1-6]: ").strip()
         choice = choice or "1"
         
         if choice == "1":
@@ -148,6 +158,9 @@ class AuditScene(Scene):
             
             state.goto("audit")
             return
+        elif choice == "6":
+            state.goto("decision")
+            return
         
         io_out.write_line("Invalid choice. returning to main menu")
         state.goto("intro")
@@ -167,6 +180,38 @@ class ArbiterScene(Scene):
         io_out.write_line("1) Return to main menu")
         choice = io_in.read_line("Choose [1]: ").strip() or "1"
         state.goto("intro")
+        
+class DecisionScene(Scene):
+    def __init__(self) -> None:
+        super().__init__(scene_id="decision")
+    
+    def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
+        secret_active = state.flags.get("secret_clause_active",False)
+        current = "SECRET WAIVER ACTIVE" if secret_active else "PUBLIC OATH ONLY"
+        io_out.write_line("")
+        io_out.write_line("Decision: City Policy")
+        io_out.write_line(f"Current stance: {current}")
+        io_out.write_line("1) Restore the puclic oath (disable secret waiver)")
+        io_out.write_line("2) Lagalize the secret waiver (keep it active)")
+        choice = io_in.read_line("Choose [1-2]: ").strip() or "1"
+        
+        if choice == "1":
+            state.flags["secret_clause_active"] = False
+            state.flags["policy"] = "public"
+            state.adjust_rep("scribes", +1)
+            state.adjust_rep("mariners", -1)
+            io_out.write_line("City response: Relief across districts. Oath restored.")
+            state.goto("intro")
+        elif choice == "2":
+            state.flags["secret_clause_active"] = True
+            state.flags["policy"] = "secret"
+            state.adjust_rep("scribes", -1)
+            state.adjust_rep("mariners", +1)
+            io_out.write_line("City response: Uneasy acceptance. Hidden waivers now legal.")
+            state.goto("intro")
+        else:
+            io_out.write_line("No decision made. Returning to main menu.")
+            state.goto("intro")
 
 class EndScene(Scene):
     def __init__(self) -> None:
@@ -181,6 +226,7 @@ SCENES: Dict[str, Scene] = {
     "intro": IntroScene(),
     "audit": AuditScene(),
     "arbiter": ArbiterScene(),
+    "decision": DecisionScene(),
     "end": EndScene(),
 }
 
