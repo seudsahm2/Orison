@@ -37,7 +37,10 @@ class IntroScene(Scene):
         io_out.write_line("1) Begin an audit")
         io_out.write_line("2) Pick up a Witness Mark (demo)")
         io_out.write_line("3) Quit")
-        choice = io_in.read_line("Choose [1-3]: ").strip()
+        io_out.write_line("4) Save game")
+        io_out.write_line("5) Load game")
+        io_out.write_line("6) Continue (load last save)")
+        choice = io_in.read_line("Choose [1-5]: ").strip()
         choice = choice or "3"  # Enter defaults to Quit (for test_smoke)
 
         if choice == "1":
@@ -53,6 +56,30 @@ class IntroScene(Scene):
             state.goto("intro")
         elif choice == "3":
             state.goto("end")
+        elif choice == "4":
+            path = io_in.read_line("Save path [save_game/save_orison.json]: ").strip() or "save_game/save_orison.json"
+            try:
+                state.save_json(path)
+                io_out.write_line(f"Saved to {path}")
+            except Exception as e:
+                io_out.write_line(f"Could not save: {e}")
+            state.goto("intro")
+        elif choice == "5":
+            path = io_in.read_line("Load path [save_game/save_orisn.json]: ").strip() or "save_orison.json"
+            try:
+                state.load_json_into_self(path)
+                io_out.write_line("Loaded. rturning to main menu.")
+            except Exception as e:
+                io_out.write_line(f"Could not load: {e}")
+            state.goto("intro")
+        elif choice == "6":
+            default_path = "save_game/save_orison.json"
+            try:
+                state.load_json_into_self(default_path)
+                io_out.write_line("Continue from last save ...")
+            except Exception as e:
+                io_out.write_line(f"no save to continue: {e}")
+                state.goto("intro")
         else:
             io_out.write_line("I did not understand. Returning to menu.")
             state.goto("intro")         
