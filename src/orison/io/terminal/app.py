@@ -59,30 +59,47 @@ class AuditScene(Scene):
         super().__init__(scene_id="audit")
         
     def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
-        # Create some example data (not yet stored on GameState; that’s Step 3)
-        contract = Contract(
+        
+        public = Contract(
             id="C-001",
             title="Canal Maintainance Oath",
-            clauses=["Kep canals clear"],
+            clauses=["Keep canals clear"],
             is_public=True
         )
+        
+        secret_active = state.flags.get("secret_clause_active",False)
+        secret = Contract(
+            id="C-SEC-001",
+            title="Night Discharge Waiver",
+            clauses=["Discharge blackwater at night"],
+            is_public=False,
+        ) if secret_active else None
         
         has_witness = any(m.is_witness for m in state.inventory)
         flag_has_witness = state.flags.get("has_witness_mark", False)
         
+        canals_black = False
+        if secret is not None and public.conflicts_with(secret):
+            canals_black = True
+        state.flags["canals_black"] = canals_black
+        
         io_out.write_line("")
         io_out.write_line("Audit: Review Summary")
-        io_out.write_line(str(contract))
+        io_out.write_line(str(public))
+        if secret_active:
+            io_out.write_line(str(secret))
         io_out.write_line(f"You hold a witness mark: {'yes' if has_witness else 'no'} "
                           f"(flag: {'yes' if flag_has_witness else 'no'})")
         
+        io_out.write_line(f"Canal status: {'BLACK' if canals_black else 'CLEAR'}")
         io_out.write_line("")
         io_out.write_line("What is next?")
         io_out.write_line("1) Return to main menu")
         io_out.write_line("2) Conclude for now")
         io_out.write_line("3) Investigate (chck ledger or visit dock)")
         io_out.write_line("4) Visit the arbiter")
-        choice = io_in.read_line("Choose [1-3]: ").strip()
+        io_out.write_line("5) Toggle secret clause (reveal/withdraw)")
+        choice = io_in.read_line("Choose [1-5]: ").strip()
         choice = choice or "1"
         
         if choice == "1":
@@ -120,6 +137,16 @@ class AuditScene(Scene):
             return
         elif choice == "4":
             state.goto("arbiter")
+            return
+        elif choice == "5":
+            new_state = not state.flags.get("secret_clause_active",False)
+            state.flags["secret_clause_active"] = new_state
+            if new_state:
+                io_out.write_line("Secret clause is now ACTIVE (a hidden waiver exists).")
+            else:
+                io_out.write_line("Secret clause is now INACTIVE (no hidden waiver).")
+            
+            state.goto("audit")
             return
         
         io_out.write_line("Invalid choice. returning to main menu")
