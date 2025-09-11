@@ -22,7 +22,7 @@ class GameState:
     current_scene_id: str = "intro"
     running: bool = True
     inventory: list["Mark"] = field(default_factory=list)
-    flags: dict[str, bool] = field(default_factory=dict)
+    flags: dict[str, object] = field(default_factory=dict)
     reputation: dict[str, int] = field(default_factory=dict)
 
     def stop(self) -> None:
@@ -41,8 +41,10 @@ class GameState:
         return {
             "player_name": self.player_name,
             "current_scene_id": self.current_scene_id,
-            "running": [
-                {"id": m.id,"kind":m.kind, "is_witness": m.is_witness} for m in self.inventory
+            "running": self.running,
+            "inventory": [
+                {"id": m.id, "kind": m.kind, "is_witness": m.is_witness}
+                for m in self.inventory
             ],
             "flags": dict(self.flags),
             "reputation": dict(self.reputation),

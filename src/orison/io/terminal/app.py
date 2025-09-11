@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict
-import time
 from ...engine import GameState, Scene
 from ...engine.scene import InputPort, OutputPort
 from ...models import Contract, Mark
@@ -15,6 +14,17 @@ class ConsoleIO:
 
     def read_line(self, prompt: str = "") -> str:
         return input(prompt)
+
+
+# Step 11: centralized input guard (single-shot with safe default)
+def _choice_or_default(io_in: InputPort, io_out: OutputPort, prompt: str, valid: set[str], default: str) -> str:
+    raw = (io_in.read_line(prompt) or "").strip()
+    if not raw:
+        return default
+    if raw in valid:
+        return raw
+    io_out.write_line(f"Invalid choice. Using default [{default}].")
+    return default
 
 
 class IntroScene(Scene):
@@ -40,8 +50,7 @@ class IntroScene(Scene):
         io_out.write_line("4) Save game")
         io_out.write_line("5) Load game")
         io_out.write_line("6) Continue (load last save)")
-        choice = io_in.read_line("Choose [1-5]: ").strip()
-        choice = choice or "3"  # Enter defaults to Quit (for test_smoke)
+        choice = _choice_or_default(io_in, io_out, "Choose [1-6]: ", set("123456"), default="3")
 
         if choice == "1":
             state.goto("audit")
@@ -61,24 +70,24 @@ class IntroScene(Scene):
             try:
                 state.save_json(path)
                 io_out.write_line(f"Saved to {path}")
-            except Exception as e:
+            except OSError as e:
                 io_out.write_line(f"Could not save: {e}")
             state.goto("intro")
         elif choice == "5":
-            path = io_in.read_line("Load path [save_game/save_orisn.json]: ").strip() or "save_orison.json"
+            path = io_in.read_line("Load path [save_game/save_orison.json]: ").strip() or "save_game/save_orison.json"
             try:
                 state.load_json_into_self(path)
-                io_out.write_line("Loaded. rturning to main menu.")
-            except Exception as e:
+                io_out.write_line("Loaded. Returning to main menu.")
+            except (OSError, ValueError) as e:
                 io_out.write_line(f"Could not load: {e}")
             state.goto("intro")
         elif choice == "6":
             default_path = "save_game/save_orison.json"
             try:
                 state.load_json_into_self(default_path)
-                io_out.write_line("Continue from last save ...")
-            except Exception as e:
-                io_out.write_line(f"no save to continue: {e}")
+                io_out.write_line("Continuing from last save...")
+            except (OSError, ValueError) as e:
+                io_out.write_line(f"No save to continue: {e}")
                 state.goto("intro")
         else:
             io_out.write_line("I did not understand. Returning to menu.")
@@ -90,56 +99,62 @@ class AuditScene(Scene):
         super().__init__(scene_id="audit")
         
     def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
-        
         public = Contract(
             id="C-001",
-            title="Canal Maintainance Oath",
+            title="Canal Maintenance Oath",
             clauses=["Keep canals clear"],
-            is_public=True
+            is_public=True,
         )
-        
-        secret_active = state.flags.get("secret_clause_active",False)
-        secret = Contract(
-            id="C-SEC-001",
-            title="Night Discharge Waiver",
-            clauses=["Discharge blackwater at night"],
-            is_public=False,
-        ) if secret_active else None
-        
+
+        secret_active = state.flags.get("secret_clause_active", False)
+        secret = (
+            Contract(
+                id="C-SEC-001",
+                title="Night Discharge Waiver",
+                clauses=["Discharge blackwater at night"],
+                is_public=False,
+            )
+            if secret_active
+            else None
+        )
+
         has_witness = any(m.is_witness for m in state.inventory)
         flag_has_witness = state.flags.get("has_witness_mark", False)
-        
+
         canals_black = False
         if secret is not None and public.conflicts_with(secret):
             canals_black = True
         state.flags["canals_black"] = canals_black
-        
+
         io_out.write_line("")
         io_out.write_line("Audit: Review Summary")
         io_out.write_line(str(public))
-        if secret_active:
+        if secret_active and secret is not None:
             io_out.write_line(str(secret))
-        io_out.write_line(f"You hold a witness mark: {'yes' if has_witness else 'no'} "
-                          f"(flag: {'yes' if flag_has_witness else 'no'})")
-        
+        io_out.write_line(
+            f"You hold a witness mark: {'yes' if has_witness else 'no'} "
+            f"(flag: {'yes' if flag_has_witness else 'no'})"
+        )
+
         io_out.write_line(f"Canal status: {'BLACK' if canals_black else 'CLEAR'}")
-        
+
         scribes = state.get_rep("scribes")
         mariners = state.get_rep("mariners")
         io_out.write_line(f"Reputation - Scribes: {scribes} | Mariners: {mariners}")
-        
+
         io_out.write_line("")
         io_out.write_line("What is next?")
         io_out.write_line("1) Return to main menu")
         io_out.write_line("2) Conclude for now")
-        io_out.write_line("3) Investigate (chck ledger or visit dock)")
-        io_out.write_line("4) Visit the arbiter")
+        io_out.write_line("3) Investigate (check ledger or visit dock)")
+        io_out.write_line("4) Visit the Arbiter")
         io_out.write_line("5) Toggle secret clause (reveal/withdraw)")
         io_out.write_line("6) Proceed to decision")
         io_out.write_line("7) Assemble a ritual token")
-        choice = io_in.read_line("Choose [1-7]: ").strip()
-        choice = choice or "1"
-        
+        choice = _choice_or_default(
+            io_in, io_out, "Choose [1-7]: ", set("1234567"), default="1"
+        )
+
         if choice == "1":
             state.goto("intro")
             return
@@ -149,27 +164,33 @@ class AuditScene(Scene):
         elif choice == "3":
             def handle_check_ledger() -> str:
                 state.flags["checked_ledger"] = True
-                io_out.write_line("Ledger notes: backlog of repairs and mismatched reports.")
+                io_out.write_line(
+                    "Ledger notes: backlog of repairs and mismatched reports."
+                )
                 return "intro"
-            
+
             def handle_visit_dock() -> str:
                 state.flags["visited_dock"] = True
-                io_out.write_line("At the docks: faint smell of blackwater and nervous whispers.")
+                io_out.write_line(
+                    "At the docks: faint smell of blackwater and nervous whispers."
+                )
                 return "intro"
-            
+
             strategies = {
                 "1": handle_check_ledger,
                 "2": handle_visit_dock,
                 "3": lambda: "intro",
             }
-            
+
             io_out.write_line("")
             io_out.write_line("Investigation")
             io_out.write_line("1) Check ledger")
             io_out.write_line("2) Visit dock")
             io_out.write_line("3) Back")
-            sub = io_in.read_line("Choose [1-3]: ").strip() or "3"
-            
+            sub = _choice_or_default(
+                io_in, io_out, "Choose [1-3]: ", set("123"), default="3"
+            )
+
             next_scene = strategies.get(sub, lambda: "intro")()
             state.goto(next_scene)
             return
@@ -177,13 +198,17 @@ class AuditScene(Scene):
             state.goto("arbiter")
             return
         elif choice == "5":
-            new_state = not state.flags.get("secret_clause_active",False)
+            new_state = not state.flags.get("secret_clause_active", False)
             state.flags["secret_clause_active"] = new_state
             if new_state:
-                io_out.write_line("Secret clause is now ACTIVE (a hidden waiver exists).")
+                io_out.write_line(
+                    "Secret clause is now ACTIVE (a hidden waiver exists)."
+                )
             else:
-                io_out.write_line("Secret clause is now INACTIVE (no hidden waiver).")
-            
+                io_out.write_line(
+                    "Secret clause is now INACTIVE (no hidden waiver)."
+                )
+
             state.goto("audit")
             return
         elif choice == "6":
@@ -192,7 +217,7 @@ class AuditScene(Scene):
         elif choice == "7":
             state.goto("ritual")
             return
-        
+
         io_out.write_line("Invalid choice. returning to main menu")
         state.goto("intro")
         
@@ -203,13 +228,15 @@ class ArbiterScene(Scene):
     
     def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
         io_out.write_line("")
-        io_out.write_line("You meeet th Arbiteer.offer a mmory to recivee a hint.")
-        memory = io_in.read_line("Type a memory (or just press enteer to skip): ").strip()
+        io_out.write_line("You meet the Arbiter. Offer a memory to receive a hint.")
+        memory = io_in.read_line(
+            "Type a memory (or just press Enter to skip): "
+        ).strip()
         hint = self.arbiter.trade_memory_for_hint(memory)
-        io_out.write_line(f"Arbiter's hine: {hint}")
+        io_out.write_line(f"Arbiter's hint: {hint}")
         io_out.write_line("")
         io_out.write_line("1) Return to main menu")
-        choice = io_in.read_line("Choose [1]: ").strip() or "1"
+        _ = _choice_or_default(io_in, io_out, "Choose [1]: ", {"1"}, default="1")
         state.goto("intro")
         
 class DecisionScene(Scene):
@@ -217,14 +244,16 @@ class DecisionScene(Scene):
         super().__init__(scene_id="decision")
     
     def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
-        secret_active = state.flags.get("secret_clause_active",False)
+        secret_active = state.flags.get("secret_clause_active", False)
         current = "SECRET WAIVER ACTIVE" if secret_active else "PUBLIC OATH ONLY"
         io_out.write_line("")
         io_out.write_line("Decision: City Policy")
         io_out.write_line(f"Current stance: {current}")
-        io_out.write_line("1) Restore the puclic oath (disable secret waiver)")
-        io_out.write_line("2) Lagalize the secret waiver (keep it active)")
-        choice = io_in.read_line("Choose [1-2]: ").strip() or "1"
+        io_out.write_line("1) Restore the public oath (disable secret waiver)")
+        io_out.write_line("2) Legalize the secret waiver (keep it active)")
+        choice = _choice_or_default(
+            io_in, io_out, "Choose [1-2]: ", {"1", "2"}, default="1"
+        )
         
         if choice == "1":
             state.flags["secret_clause_active"] = False
@@ -250,19 +279,19 @@ class RitualScene(Scene):
     
     def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
         io_out.write_line("")
-        io_out.write_line("Ritual: Assemble th Memory Sigil")
+        io_out.write_line("Ritual: Assemble the Memory Sigil")
         #  if already forged, short-circuit
         if any(m.kind == "sigil" for m in state.inventory):
-            io_out.write_line("You already forged a memory sigil")
+            io_out.write_line("You already forged a Memory Sigil.")
             state.goto("audit")
             return
         
         io_out.write_line("Combine two parts. Hint: words tied to your duty.")
-        part_a  =io_in.read_line("Enter part A (or blank to cancel): ").strip()
+        part_a  = io_in.read_line("Enter part A (or blank to cancel): ").strip()
         if not part_a:
             state.goto("audit")
             return
-        part_b = io_in.read_line("Enter ort B (or blank to cancel): ").strip()
+        part_b = io_in.read_line("Enter part B (or blank to cancel): ").strip()
         if not part_b:
             state.goto("audit")
             return
@@ -273,14 +302,14 @@ class RitualScene(Scene):
         def valid_combo(x:str, y: str) -> bool:
             return {x, y} == {"witness","oath"}
         
-        if valid_combo(a,b):
+        if valid_combo(a, b):
             if not any(m.kind == "sigil" for m in state.inventory):
-                state.inventory.append(Mark(id="SIGIL-MEM-1",kind="sigil",is_witness=False))
+                state.inventory.append(Mark(id="SIGIL-MEM-1", kind="sigil", is_witness=False))
             state.flags["sigil_for_memory"] = True
-            io_out.write_line("Ritual succeeds. A memory SIgil hums in your hands.")
+            io_out.write_line("Ritual succeeds. A Memory Sigil hums in your hands.")
             state.goto("audit")
         else:
-            io_out.write_line("The glyphs sputter. Hint: try combining 'witness with 'oath'.")
+            io_out.write_line("The glyphs sputter. Hint: try combining 'witness' with 'oath'.")
             state.goto("audit")
 class EndScene(Scene):
     def __init__(self) -> None:

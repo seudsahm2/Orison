@@ -33,3 +33,4 @@ ignore = []
 minversion = "7.0"
 addopts = "-q"
 testpaths = ["tests"]
+pythonpath = ["src"]
