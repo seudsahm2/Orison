@@ -109,7 +109,8 @@ class AuditScene(Scene):
         io_out.write_line("4) Visit the arbiter")
         io_out.write_line("5) Toggle secret clause (reveal/withdraw)")
         io_out.write_line("6) Proceed to decision")
-        choice = io_in.read_line("Choose [1-6]: ").strip()
+        io_out.write_line("7) Assemble a ritual token")
+        choice = io_in.read_line("Choose [1-7]: ").strip()
         choice = choice or "1"
         
         if choice == "1":
@@ -160,6 +161,9 @@ class AuditScene(Scene):
             return
         elif choice == "6":
             state.goto("decision")
+            return
+        elif choice == "7":
+            state.goto("ritual")
             return
         
         io_out.write_line("Invalid choice. returning to main menu")
@@ -213,6 +217,44 @@ class DecisionScene(Scene):
             io_out.write_line("No decision made. Returning to main menu.")
             state.goto("intro")
 
+class RitualScene(Scene):
+    def __init__(self) -> None:
+        super().__init__(scene_id = "ritual")
+    
+    def run(self, state: GameState, io_in: InputPort, io_out: OutputPort) -> None:
+        io_out.write_line("")
+        io_out.write_line("Ritual: Assemble th Memory Sigil")
+        #  if already forged, short-circuit
+        if any(m.kind == "sigil" for m in state.inventory):
+            io_out.write_line("You already forged a memory sigil")
+            state.goto("audit")
+            return
+        
+        io_out.write_line("Combine two parts. Hint: words tied to your duty.")
+        part_a  =io_in.read_line("Enter part A (or blank to cancel): ").strip()
+        if not part_a:
+            state.goto("audit")
+            return
+        part_b = io_in.read_line("Enter ort B (or blank to cancel): ").strip()
+        if not part_b:
+            state.goto("audit")
+            return
+        
+        a = part_a.lower()
+        b = part_b.lower()
+        
+        def valid_combo(x:str, y: str) -> bool:
+            return {x, y} == {"witness","oath"}
+        
+        if valid_combo(a,b):
+            if not any(m.kind == "sigil" for m in state.inventory):
+                state.inventory.append(Mark(id="SIGIL-MEM-1",kind="sigil",is_witness=False))
+            state.flags["sigil_for_memory"] = True
+            io_out.write_line("Ritual succeeds. A memory SIgil hums in your hands.")
+            state.goto("audit")
+        else:
+            io_out.write_line("The glyphs sputter. Hint: try combining 'witness with 'oath'.")
+            state.goto("audit")
 class EndScene(Scene):
     def __init__(self) -> None:
         super().__init__(scene_id="end")
@@ -227,6 +269,7 @@ SCENES: Dict[str, Scene] = {
     "audit": AuditScene(),
     "arbiter": ArbiterScene(),
     "decision": DecisionScene(),
+    "ritual": RitualScene(),
     "end": EndScene(),
 }
 
